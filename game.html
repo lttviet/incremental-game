@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Game</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mithril/0.2.0/mithril.js"></script>
+  </head>
+
+  <body>
+    <script>
+
+var Time = {
+  day: 0,
+  month: 0,
+  year: 0
+};
+
+// increase day by 1
+Time.increment = function () {
+  Time.day++;
+
+  if (Time.day == 30) {
+    Time.day = 0;
+    Time.month++;
+  }
+
+  if (Time.month == 11) {
+    Time.month = 0;
+    Time.year++;
+  }
+};
+
+var Money = {
+  money: 0,
+  expense: 0,
+  revenue: 0,
+  change: 0
+};
+
+Money.update = function(data) {
+  var money = data.money || 0;
+  var expense = data.expense || 0;
+  var revenue = data.revenue || 0;
+
+  Money.money += money;
+  Money.expense += expense;
+  Money.revenue += revenue;
+  Money.change = Money.revenue - Money.expense;
+};
+
+Money.increment = function () {
+  Money.update( {money: 1} );
+};
+
+Money.dailyUpdate = function() {
+  Money.money += Money.change;
+}
+
+var Employee = {
+  number: 0,
+  effect: 3,
+  wage: 2
+}
+
+Employee.increment = function() {
+  Money.update( {expense: Employee.wage, revenue: Employee.effect} )
+  Employee.number++;
+  Employee.wage *= 2;
+}
+
+var Stat = {
+  update: function() {
+    setInterval(function () {
+      m.startComputation();
+      Time.increment();
+      Money.dailyUpdate();
+      m.endComputation();
+    }, 2000);
+  },
+
+  controller: function() {
+    Stat.update();
+  },
+
+  view: function() {
+    return m(".stat", [
+      m("h3", `Day ${Time.day} Month ${Time.month} Year ${Time.year}`),
+      m("h3", `Money ${Money.money} (${Money.change})`),
+      m("h3", `Expense ${Money.expense}`),
+      m("h3", `Employee ${Employee.number}`)
+    ]);
+  }
+};
+
+var Choice = {
+  view: function() {
+    return m(".choices", [
+      m("button[type=button]", { onclick: Money.increment }, "Fold origami for $" + 1),
+      m("button[type=button]", { onclick: Employee.increment } , "Hire a friend for $" + Employee.wage + " for $" + Employee.effect)
+    ]);
+  }
+};
+
+var App = {
+  view: function() {
+    return [
+      m.component(Stat),
+      m.component(Choice)
+    ];
+  }
+};
+
+m.mount(document.body, App);
+    </script>
+  </body>
+</html>
